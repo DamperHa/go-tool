@@ -1,0 +1,4 @@
+2023/08/25 16:25:55 Hello World
+Warning: 2023/08/25 16:36:09 log_test.go:43: Warning
+Info: 2023/08/25 16:36:09 log_test.go:44: Info
+Error: 2023/08/25 16:36:09 log_test.go:45: Error
