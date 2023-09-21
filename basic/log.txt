@@ -2,3 +2,27 @@
 Warning: 2023/08/25 16:36:09 log_test.go:43: Warning
 Info: 2023/08/25 16:36:09 log_test.go:44: Info
 Error: 2023/08/25 16:36:09 log_test.go:45: Error
+2023/08/30 12:54:42 Hello World
+Warning: 2023/08/30 12:54:42 log_test.go:47: Warning
+Info: 2023/08/30 12:54:42 log_test.go:48: Info
+Error: 2023/08/30 12:54:42 log_test.go:49: Error
+2023/08/30 12:56:14 Hello World
+Warning: 2023/08/30 12:56:14 log_test.go:47: Warning
+Info: 2023/08/30 12:56:14 log_test.go:48: Info
+Error: 2023/08/30 12:56:14 log_test.go:49: Error
+2023/09/13 23:17:14 Hello World
+Warning: 2023/09/13 23:17:14 log_test.go:47: Warning
+Info: 2023/09/13 23:17:14 log_test.go:48: Info
+Error: 2023/09/13 23:17:14 log_test.go:49: Error
+2023/09/13 23:17:57 Hello World
+Warning: 2023/09/13 23:17:57 log_test.go:47: Warning
+Info: 2023/09/13 23:17:57 log_test.go:48: Info
+Error: 2023/09/13 23:17:57 log_test.go:49: Error
+2023/09/13 23:18:26 Hello World
+Warning: 2023/09/13 23:18:26 log_test.go:47: Warning
+Info: 2023/09/13 23:18:26 log_test.go:48: Info
+Error: 2023/09/13 23:18:26 log_test.go:49: Error
+2023/09/17 09:00:23 Hello World
+Warning: 2023/09/17 09:00:23 log_test.go:47: Warning
+Info: 2023/09/17 09:00:23 log_test.go:48: Info
+Error: 2023/09/17 09:00:23 log_test.go:49: Error

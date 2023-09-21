@@ -64,3 +64,26 @@ func TestPrintArr(t *testing.T) {
 	printSliceArray(s1)
 	printSliceArray(s2)
 }
+
+const sliceSize = 1000
+
+// 对于benchmark的操作
+// go test -bench=.
+// go test -bench=BenchmarkWithCap
+func BenchmarkWithoutCap(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		sl := make([]int, 0)
+		for i := 0; i < sliceSize; i++ {
+			sl = append(sl, i)
+		}
+	}
+}
+
+func BenchmarkWithCap(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		sl := make([]int, sliceSize)
+		for i := 0; i < b.N; i++ {
+			sl = append(sl, i)
+		}
+	}
+}
