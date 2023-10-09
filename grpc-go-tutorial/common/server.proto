@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package main;
+
+message ServerInfo {
+  string ip = 1;
+  int32 port = 2;
+}
+
+service Greeter {
+  rpc GetHelloIPAndPort (ServerInfo) returns (ServerInfo);
+}
