@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 
 	wrapper "github.com/golang/protobuf/ptypes/wrappers"
 )
@@ -147,10 +148,157 @@ func TestBiStreaming(t *testing.T) {
 	channel <- struct{}{}
 }
 
+// context canceled
+func TestCancel(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	// =========================================
+	// Process Order : Bi-di streaming scenario
+	streamProcOrder, err := client.ProcessOrders(ctx)
+	if err != nil {
+		log.Fatalf("%v.ProcessOrders(_) = _, %v", client, err)
+	}
+
+	if err := streamProcOrder.Send(&wrapper.StringValue{Value: "102"}); err != nil {
+		log.Fatalf("%v.Send(%v) = %v", client, "102", err)
+	}
+
+	if err := streamProcOrder.Send(&wrapper.StringValue{Value: "103"}); err != nil {
+		log.Fatalf("%v.Send(%v) = %v", client, "103", err)
+	}
+
+	if err := streamProcOrder.Send(&wrapper.StringValue{Value: "104"}); err != nil {
+		log.Fatalf("%v.Send(%v) = %v", client, "104", err)
+	}
+
+	channel := make(chan struct{})
+	go asncClientBidirectionalRPC(streamProcOrder, channel)
+	time.Sleep(time.Millisecond * 1000)
+
+	// Cancelling the RPC
+	cancel()
+	log.Printf("RPC Status: %v", ctx.Err())
+
+	time.Sleep(time.Second)
+	if err := streamProcOrder.Send(&wrapper.StringValue{Value: "101"}); err != nil {
+		log.Fatalf("%v.Send(%v) = %v", client, "101", err)
+	}
+	if err := streamProcOrder.CloseSend(); err != nil {
+		log.Fatal(err)
+	}
+	channel <- struct{}{}
+}
+
+func TestDeadline(t *testing.T) {
+	clientDeadline := time.Now().Add(time.Duration(2 * time.Second))
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	defer cancel()
+
+	order1 := pb.Order{Id: "103", Items: []string{"iPhone XS", "Mac Book Profffff"}, Destination: "San Jose, CA", Price: 2300.00}
+	res, err := client.AddOrder(ctx, &order1)
+	if res != nil {
+		log.Print("AddOrder Response -> ", res.Value)
+	}
+
+	log.Println(err)
+}
+
+func TestKeepAlive(t *testing.T) {
+	ka := keepalive.ClientParameters{
+		Time:    5 * time.Second, // Send pings every 5 seconds if no activity
+		Timeout: time.Second,     // Wait 1 second for ping ack before considering the connection as non-responsive
+	}
+
+	conn, err := grpc.Dial("localhost:50001", grpc.WithInsecure(), grpc.WithKeepaliveParams(ka))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	// 2. 获取grpc客户端
+	client = pb.NewOrderManagementClient(conn)
+
+	clientDeadline := time.Now().Add(time.Duration(2 * time.Second))
+	ctx, cancel := context.WithDeadline(context.Background(), clientDeadline)
+	defer cancel()
+
+	order1 := pb.Order{Id: "103", Items: []string{"iPhone XS", "Mac Book Profffff"}, Destination: "San Jose, CA", Price: 2300.00}
+	res, err := client.AddOrder(ctx, &order1)
+	if res != nil {
+		log.Print("AddOrder Response -> ", res.Value)
+	}
+
+	log.Println(err)
+}
+
+func TestAddOrder(t *testing.T) {
+	// Setting up a connection to the server.
+	conn, err := grpc.Dial(address, grpc.WithInsecure(),
+		grpc.WithUnaryInterceptor(orderUnaryClientInterceptor),
+		grpc.WithStreamInterceptor(clientStreamInterceptor))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	defer conn.Close()
+
+	c := pb.NewOrderManagementClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	// Add Order
+	order1 := pb.Order{Id: "101", Items: []string{"iPhone XS", "Mac Book Pro"}, Destination: "San Jose, CA", Price: 2300.00}
+	res, _ := c.AddOrder(ctx, &order1)
+	log.Print("AddOrder Response -> ", res.Value)
+}
+
+func orderUnaryClientInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+	// Pre-processor phase
+	log.Println("Method : " + method)
+
+	// Invoking the remote method
+	err := invoker(ctx, method, req, reply, cc, opts...)
+
+	// Post-processor phase
+	log.Println(reply)
+
+	return err
+}
+
+func clientStreamInterceptor(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+
+	log.Println("======= [Client Interceptor] ", method)
+	s, err := streamer(ctx, desc, cc, method, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return newWrappedStream(s), nil
+}
+
+type wrappedStream struct {
+	grpc.ClientStream
+}
+
+func (w *wrappedStream) RecvMsg(m interface{}) error {
+	log.Printf("====== [Client Stream Interceptor] Receive a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
+	return w.ClientStream.RecvMsg(m)
+}
+
+func (w *wrappedStream) SendMsg(m interface{}) error {
+	log.Printf("====== [Client Stream Interceptor] Send a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
+	return w.ClientStream.SendMsg(m)
+}
+
+func newWrappedStream(s grpc.ClientStream) grpc.ClientStream {
+	return &wrappedStream{s}
+}
+
 func asncClientBidirectionalRPC(streamProcOrder pb.OrderManagement_ProcessOrdersClient, c chan struct{}) {
 	for {
 		combinedShipment, errProcOrder := streamProcOrder.Recv()
-		if errProcOrder == io.EOF {
+
+		log.Printf("asncClient, combinedShipment:%v, errProcOrder:%v ", combinedShipment, errProcOrder)
+		if errProcOrder != io.EOF {
 			break
 		}
 		log.Printf("Combined shipment : %v", combinedShipment.OrdersList)
