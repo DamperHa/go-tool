@@ -41,7 +41,7 @@ func NewEvent(g Greeter) Event {
 	return Event{Greeter: g}
 }
 
-//func main() {
+//func main.go() {
 //	e := NewEvent(NewGreeter(NewMessage()))
 //	e.Start()
 //}

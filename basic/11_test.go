@@ -37,3 +37,9 @@ func TestDemo1(t *testing.T) {
 	r, _ := jsoniter.MarshalToString(arg)
 	fmt.Println(r)
 }
+
+func TestSlice(t *testing.T) {
+	s := make([]int, 2)
+	s = append(s, 1)
+	fmt.Println(s)
+}

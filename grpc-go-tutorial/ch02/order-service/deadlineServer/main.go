@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	pb "go-tool/grpc-go-tutorial/ch02/order-service/deadlineServer/ecommerce"
 	"io"
 	"log"
@@ -32,6 +33,16 @@ type server struct {
 
 // Simple RPC
 func (s *server) AddOrder(ctx context.Context, orderReq *pb.Order) (*wrapper.StringValue, error) {
+	fmt.Println("requset in", time.Now())
+
+	//select {
+	//case <-ctx.Done():
+	//	fmt.Println("time out Done")
+	//}
+
+	time.Sleep(3 * time.Second)
+
+	logrus.Info("server still run. ", time.Now())
 	time.Sleep(time.Second * 5)
 	if ctx.Err() == context.DeadlineExceeded {
 		log.Printf("RPC has reached deadline exceeded state: %s", ctx.Err())

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	pb "go-tool/grpc-go-tutorial/ch01/productinfo/server/ecommerce"
+	pb "go-tool/grpc-go-tutorial/ch01/productinfo/client/ecommerce"
 	"log"
 	"time"
 

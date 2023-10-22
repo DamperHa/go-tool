@@ -22,7 +22,7 @@ func GoID() int {
 }
 
 func TestGOID(t *testing.T) {
-	fmt.Println("main", GoID())
+	fmt.Println("main.go", GoID())
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		j := i
