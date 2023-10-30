@@ -28,7 +28,7 @@ func main() {
 	name := "Apple iPhone 11"
 	description := "Meet Apple iPhone 11. All-new dual-camera system with Ultra Wide and Night mode."
 	price := float32(699.00)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 100000*time.Second)
 	defer cancel()
 	r, err := c.AddProduct(ctx, &pb.Product{Name: name, Description: description, Price: price})
 	if err != nil {
