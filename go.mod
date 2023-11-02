@@ -12,6 +12,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/olahol/melody v1.1.4
 	github.com/redis/go-redis/v9 v9.1.0
+	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.9.3
 	google.golang.org/grpc v1.58.2
 	google.golang.org/grpc/examples v0.0.0-20231010222150-32e3ef1ed1c4
