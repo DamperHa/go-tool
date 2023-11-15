@@ -2,17 +2,19 @@ package cron
 
 import (
 	"fmt"
-	"github.com/robfig/cron"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/robfig/cron"
 )
 
 func TestCron(t *testing.T) {
 	c := cron.New()
-
-	// Define the Cron job schedule
+	//
 	//c.AddFunc("* * * * *", func() {
+	//	fmt.Println(time.Now())
+	//	time.Sleep(time.Second * 12)
 	//	fmt.Println("Hello world!")
 	//})
 
@@ -20,6 +22,8 @@ func TestCron(t *testing.T) {
 	c.Start()
 	sh := cron.Every(10 * time.Second)
 	c.Schedule(sh, cron.FuncJob(func() {
+		fmt.Println(time.Now())
+		time.Sleep(time.Second * 12)
 		fmt.Println("you are ok")
 	}))
 
