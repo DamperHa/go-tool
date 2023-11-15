@@ -2,26 +2,36 @@ package cron
 
 import (
 	"fmt"
-	"github.com/robfig/cron"
+	"github.com/robfig/cron/v3"
 	"math"
 	"testing"
 	"time"
 )
 
 func TestCron(t *testing.T) {
-	c := cron.New()
+	c := cron.New(cron.WithSeconds())
 
-	// Define the Cron job schedule
-	//c.AddFunc("* * * * *", func() {
-	//	fmt.Println("Hello world!")
-	//})
+	c.AddFunc("1 * * * * *", func() {
+		fmt.Println("Hello world!")
+	})
 
-	// Start the Cron job scheduler
-	c.Start()
 	sh := cron.Every(10 * time.Second)
 	c.Schedule(sh, cron.FuncJob(func() {
 		fmt.Println("you are ok")
 	}))
+
+	go func() {
+		ticker := time.NewTicker(time.Second * 4)
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Println("length: ", len(c.Entries()))
+			}
+		}
+	}()
+
+	// c.Start()
+	c.Start()
 
 	// Wait for the Cron job to run
 	time.Sleep(5 * time.Minute)
@@ -49,4 +59,12 @@ func TestGetBits(t *testing.T) {
 	res := getBits(1, 3, 1)
 
 	fmt.Printf("%d 的二进制表示是 %b\n", res, res)
+}
+
+func TestSlice(t *testing.T) {
+	a := []int{1, 2, 3}
+
+	fmt.Println(a)
+
+	fmt.Println(a[:len(a)-1])
 }
