@@ -33,7 +33,7 @@ type SingleFlightHandler struct {
 }
 
 func (sfHandler *SingleFlightHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	_ = <-sfHandler.group.DoChan("", func() (interface{}, error) {
+	sfHandler.group.DoChan("", func() (interface{}, error) {
 		defer sfHandler.group.Forget("")
 
 		sfHandler.next.ServeHTTP(w, r)
